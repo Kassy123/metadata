@@ -1,0 +1,38 @@
+h1{
+    text-align: center;
+}
+.container{
+    max-width: 1200px;
+    margin: 0 auto;
+}
+img {
+	height: 100px;
+}
+.file-input{
+    padding: 20px;
+}
+.dropzone{
+    width: 90%;
+	height: 200px;
+	background: white;
+    border: 1px dashed #666;
+    text-align: center;
+    padding-top: 10px;
+}
+.dropcontainer{
+    display: flex;
+    flex-wrap: wrap;
+}
+ul{
+    margin-inline-start: -20px;
+}
+.exif2{
+    text-align: center;
+}
+.firstDrop{
+    margin-right: 40px;
+    width: 550px !important;
+}
+.drop{
+    width: 550px !important;
+}
