@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Visualisierung von Metadaten von Fotos</title>
+<meta name="description" content="Schnelles Auslesen und &uuml;bersichtliches Anzeigen der wichtigsten Exif-Daten aus einer Fotodatei vom eigenen Ger&auml;t, ohne Hochladen.">
+
+<link rel="stylesheet" href="style.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="exif.js" async></script>
+
+
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<script type="text/javascript" src="http://x3dom.org/x3dom/dist/x3dom-full.js"></script>
+<!--<script type="text/javascript" src="scatter_plot_3d_demo.js"></script>-->
+<link rel="stylesheet" type="text/css" href="http://www.x3dom.org/download/dev/x3dom.css"/>
+
+</head>
+<body>
+<div class="container">
+	<h1>Visualisierung von Metadaten von Fotos</h1>
+	<br>
+	<p>Vergleiche die Metadaten deiner Fotos. Ziehe so viele Fotos wie du möchtest in eines der Felder. Zum Vergleichen vor zwei Ordnern ziehe die Fotos des ersten Ordners links hinein und die des zweiten Ordners rechts.</p>
+	<main>
+		<div class="dropcontainer">
+			<div class="firstDrop drop" style="width: 500px;">
+				<div id="dropzoneOne" class="dropzone" ondrop="upload_file(event)" ondragover="return false"> <!-- Ziehen Sie Ihre Dateien mit Drag & Drop hier herein:
+				<br> (Durch Drücken der [strg]-Taste können Sie mehrfach auswählen!)--> Ziehe deine Fotos hier hinein
+                <form id="form">
+                <input id="file-input" class="file-input" type="file" name="filefield" multiple="multiple" style="width:100%;max-width:500px;text-align:center">
+                <ul id="ausgabe"></ul>
+                </form>    
+                </div>
+				<br>
+				<form oninput="titleOne.value=title1.value">
+					<input type="text" name="Foldertitle" value="Title folder 1" id="title1"><br>
+					<output
+						id="listone">
+						<pre><span id="makeAndModel">Die Metadaten der Bilder im Ordner </span> <output id="titleOne" name="titleOne" for="title1"></output></pre>	
+					</output>
+				</form>	
+			</div>
+			<div class="secondDrop drop" style="width: 500px;">
+				<div id="dropzoneTwo" class=" dropzone" ondrop="upload_file(event)" ondragover="return false"> <!--Ziehen Sie Ihre Dateien mit Drag & Drop hier herein:
+					<br> (Durch Drücken der [strg]-Taste können Sie mehrfach auswählen!) -->Ziehe deine Fotos hier hinein
+					<form id="form">
+						<input id="file-input-2" class="file-input" type="file" name="filefield2" multiple="multiple" style="width:100%;max-width:500px;text-align:center">
+						<ul id="ausgabe" class="ausgabe2"></ul>
+					</form> 
+				</div>
+				<br>
+				<form oninput="titleTwo.value=title2.value">
+					<input type="text" name="Foldertitle" value="Title folder 2" id="title2"><br>
+					<output
+						id="listtwo">
+						<pre><span id="makeAndModel">Die Metadaten der Bilder im Ordner </span> <output id="titleTwo" name="titleTwo" for="title2"></output></pre>
+					</output>
+				</form>		
+			</div>	
+		</div>
+		<br>
+		<button type="button" onclick="location.reload()">Reload! </button>
+        <br><br>
+        
+	</main>
+</div>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script type="text/javascript">
+var fileobj1;
+var fileobj2
+/**
+//upload in Ordner uploads
+function upload_file(e) {
+	if(e.target.id == "dropzoneOne"){
+		e.preventDefault();
+		fileobj1 = e.dataTransfer.files;
+		for (var i = 0, f; f = fileobj1[i]; i++) {
+		ajax_file_upload1(fileobj1[i]);	 
+		}
+		
+	}
+	else if(e.target.id == "dropzoneTwo"){
+		e.preventDefault();
+		fileobj2 = e.dataTransfer.files;
+		for (var i = 0, f; f = fileobj2[i]; i++) {
+		ajax_file_upload2(fileobj2[i]);
+		}
+	}
+}
+	
+function ajax_file_upload1(file_obj1) {
+	if(file_obj1 != undefined) {
+		var form_data = new FormData();                  
+		form_data.append('file', file_obj1);
+		$.ajax({
+			type: 'POST',
+			url: 'testAjax.php',
+			contentType: false,
+			processData: false,
+			data: form_data,
+			success:function(response) {
+				alert(response);
+				$('#selectfile').val('');
+			}
+		});
+	}
+}
+
+function ajax_file_upload2(file_obj2) {
+    if(file_obj2 != undefined) {
+        var form_data = new FormData();                  
+		form_data.append('file', file_obj2);
+        $.ajax({
+            type: 'POST',
+            url: 'TestAjax2.php',
+            contentType: false,
+            processData: false,
+            data: form_data,
+            success:function(response) {
+                alert(response);
+                $('#selectfile').val('');
+            }
+        });
+    }
+}
+
+// output der Metadaten mit javascript
+function dateiauswahl(evt) {
+    if(evt.target.id == "dropzoneOne"){
+		evt.stopPropagation();
+		evt.preventDefault();
+		var gewaehlteDateien = evt.dataTransfer.files; // FileList Objekt
+	
+		
+		var output = [];
+		for (var i = 0, f; f = gewaehlteDateien[i]; i++) {
+			output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a',
+				') - ', f.size, ' bytes, last modified: ', f.lastModifiedDate.toLocaleDateString(),
+				'</li>');    
+				        
+	    }
+		document.getElementById('listone')
+			.innerHTML = '<ul>' + output.join('') + '</ul>';
+    }
+    else{
+        evt.stopPropagation();
+	    evt.preventDefault();
+		var gewaehlteDateien = evt.dataTransfer.files; // FileList Objekt
+		var output = [];
+		for (var i = 0, f; f = gewaehlteDateien[i]; i++) {
+			output.push('<li><strong>', escape(f.name), '</strong> (', f.type || 'n/a',
+				') - ', f.size, ' bytes, last modified: ', f.lastModifiedDate.toLocaleDateString(),
+				'</li>');
+                 
+	    }
+		document.getElementById('listtwo')
+			.innerHTML = '<ul>' + output.join('') + '</ul>';
+    }
+}
+	
+function handleDragOver(evt) {
+	evt.stopPropagation();
+	evt.preventDefault();
+	evt.dataTransfer.dropEffect = 'copy';
+}
+ 
+    
+// Initialisiere Drag&Drop EventListener
+var dropZoneOne = document.getElementById('dropzoneOne');
+dropZoneOne.addEventListener('dragover', handleDragOver, false);
+dropZoneOne.addEventListener('drop', dateiauswahl, false);
+
+var dropZoneTwo = document.getElementById('dropzoneTwo');
+dropZoneTwo.addEventListener('dragover', handleDragOver, false);
+dropZoneTwo.addEventListener('drop', dateiauswahl, false);
+*/
+</script>
+
+<br><br>
+<div id="exif" class="exif" style="max-width:300px;text-align:left; width: 50%"></div>
+<div id="exif2" class="exif2" style="text-align:left; width: 50%; margin-left: 622px;"></div>
+
+<!--
+<div>
+<form>
+	<p>Geben Sie die gewünschten Metadaten an</p>
+	<fieldset>
+		<input id="iso" type="radio" name="Metadaten" value="ISO">
+		<label for="is"> ISO </label>
+		<input id="belichtung" type="radio" name="Metadaten" value="Belichtungszeit">
+		<label for="be"> Belichtungszeit</label>
+		<input id="brennw" type="radio" name="Metadaten" value="Brennweite">
+		<label for="br"> Brennweite</label>
+	</fieldset>
+</form>
+</div>
+
+<div>
+	<canvas id="myChart1" width="400" height="400"></canvas>
+</div>
+<div>
+	<canvas id="myChart2" width="400" height="400"></canvas>
+</div>
+<div>
+	<canvas id="myChart3" width="400" height="400"></canvas>
+</div>
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.min.js"></script>
+<script src="my-chart.js"></script>
+<script src="scatter.js"></script>
+<div id="divPlot"></div>
+
+<script>
+	console.log(d3.select('#divPlot'));
+	d3.select('html').style('height','100%').style('width','100%')
+	d3.select('body').style('height','100%').style('width','100%')
+	d3.select('#divPlot').style('width', "50%").style('height', "1000px")
+	scatterPlot3d( d3.select('#divPlot'));
+</script>
+<style>
+#divPlot{
+	margin-right: 0px;
+}
+</style>
+<!--
+<div id="beispiel"></div>
+<script type="text/javascript" src="parallel.js"></script>
+-->
+<!--
+<script src="https://d3js.org/d3.v4.js"></script>
+<script>
+
+var margin = {top: 30, right: 40, bottom: 30, left: 50},
+    width = 600 - margin.left - margin.right,
+    height = 270 - margin.top - margin.bottom;
+
+var parseDate = d3.time.format("%d-%b-%y").parse;
+
+var x = d3.time.scale().range([0, width]);
+var y0 = d3.scale.linear().range([height, 0]);
+var y1 = d3.scale.linear().range([height, 0]);
+
+var xAxis = d3.svg.axis().scale(x)
+    .orient("bottom").ticks(5);
+
+var yAxisLeft = d3.svg.axis().scale(y0)
+    .orient("left").ticks(5);
+
+var yAxisRight = d3.svg.axis().scale(y1)
+    .orient("right").ticks(5); 
+
+var valueline = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y0(d.close); });
+    
+var valueline2 = d3.svg.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y1(d.open); });
+  
+var svg = d3.select("body")
+    .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+        .attr("transform", 
+              "translate(" + margin.left + "," + margin.top + ")");
+
+  const data = ["I", "II", "III"];
+
+  const nameScale = d3.scaleOrdinal()
+    .domain(data)
+    .range(["Jan", "Feb", "Mar"]);
+
+  const widthScale = d3.scaleOrdinal()
+    .domain(data)
+    .range([300, 100, 900]);
+
+  const color = d3.scale.ordinal(d3.schemeCategory20);
+
+  d3.select("#beispiel")
+    .selectAll("div")
+    .data(data)
+    .enter()
+    .append("div")
+    .text(nameScale)
+    .style("width", d => widthScale(d) + "px")
+    .style("background-color", color);
+
+</script>
+-->
+</body>
+
+</html>
